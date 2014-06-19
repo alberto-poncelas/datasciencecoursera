@@ -1,0 +1,95 @@
+Practical Machine Learning project
+========================================================
+
+
+# Introduction
+
+
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively (more information is available from the website here: http://groupware.les.inf.puc-rio.br/har). In this project, the goal is to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants to predict the exercise they do. For doing predictions we are going to use a KNN model.
+
+
+The training data for this project are available here: 
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+The test data are available here: 
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+
+# Analysis
+
+
+Necessary libraries and data is loaded.
+
+
+```{r,echo=FALSE}
+library(caret)
+
+##Load data##
+data<-read.csv("pml-training.csv", header=TRUE, as.is = TRUE, stringsAsFactors = FALSE, sep=',', na.strings=c('NA','','#DIV/0!'))
+
+```
+
+
+We first preprocess the data. Here, we remove the first columns (the ones that contains names, dates...) and also those columns 
+that have many NA values. We then scale and center the data.
+
+
+```{r}
+##Preprocess data##
+
+classe<- as.factor(data$classe)
+
+#Get numeric values
+data<-apply(data[,8:159], 2,as.numeric)
+
+#Remove columns with many NA
+data <- data[,colSums(is.na(data))<(nrow(data)*0.7)]
+
+#Scale and center data
+data<- scale(data,center=TRUE,scale=TRUE)
+data<-as.data.frame(data)
+data<-as.data.frame(cbind(data,classe))
+
+```
+
+
+
+
+Once the data has been preprocessed we create the model. We have decided to use K-Nearest Neighbors algorithm. For validating the model we are using a 10-fold cross validation.
+
+
+
+
+```{r, echo=TRUE, cache=TRUE}
+##Create model##
+fit <- train(classe ~ ., data=data, method="knn", trControl = trainControl(method = "cv", number = 10))
+fit
+```
+
+As we can see, with KNN, a good accuracy is obtained. We are using this model, being K=5, to makes predictions.
+
+
+# Prediction
+
+Lastly, we use the model created for making predictions of testing set.
+
+```{r, echo=TRUE}
+
+##Prediction##
+
+test<-read.csv("pml-testing.csv", header=TRUE, as.is = TRUE, stringsAsFactors = FALSE, sep=',', na.strings=c('NA','','#DIV/0!'))
+
+
+test<-apply(test[,8:159], 2,as.numeric)
+test <- test[,colSums(is.na(test))<(nrow(test)*0.7)]
+test<- scale(test,center=TRUE,scale=TRUE)
+test<-as.data.frame(test)
+
+
+prediction <- predict(fit, test)
+prediction
+
+```
+
+
