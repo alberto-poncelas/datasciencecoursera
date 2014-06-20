@@ -1,0 +1,75 @@
+---
+output: html_document
+---
+Regression Models project
+========================================================
+
+In this document we are exploring variables of mtcar dataset. We are specially interested in the relationship between miles per gallon and car transmission. For the study we are using a linear regression model.
+
+## Load and preprocess data
+
+We first load mtcars data and preprocess it. We are replacing 0 and 1 values by the proper transmission label (0 = automatic, 1 = manual)
+
+```{r}
+#load data
+data(mtcars)
+
+#change the number by a label
+mtcars$am[mtcars$am==0] <- "automatic"
+mtcars$am[mtcars$am==1] <- "manual"
+mtcars$am <- as.factor(mtcars$am)
+```
+## Exploratory analysis and regression
+
+In Fig. 1 and Fig 2 in the appendix we show some plots explaining the relation between mpg and transmission. As we can see in Fig. 2 it seems that in general manual transmission have higher MPG value.
+
+```{r, echo=TRUE}
+fit<-lm(mtcars$mpg~mtcars$am)
+summary(fit)
+```
+
+Since manual coefficient is positive we expect to have a higher mpg value. In fact we predict to have `r round(coef(fit)[2],2)` more mpg value if transmission is automatic.
+
+
+## Diagnosis
+
+In Fig 3. (in the appendix) we show the plot of the residuals. We cannot see any pattern, so we deduce that linear regression is enough good and there is no need to search for other models (Polynomial regression, logistic regression...).
+
+For estimating how much higher we would expect to be MPG value having a manual transmission car:
+ 
+```{r, echo=TRUE}
+sumCoef.coef<-summary(fit)$coefficient[1,1]
+sumCoef.stdError<-summary(fit)$coefficient[1,2]
+
+intrv<-sumCoef.coef+c(-1,1)*qt(.975,df=fit$df)*sumCoef.stdError
+intrv
+```
+
+We can conclude with 95% confidence the mpg will be between `r round(intrv[1],2)` and `r round(intrv[2],2)` higher if the transmission is manual. 
+
+
+
+## Summary
+
+
+To sum up, at overall having a manual transmission car we can cover more miles per each gallon. With this study we have reached to the conclusion that we should expect about `r round(coef(fit)[2],2)` more miles.
+
+## Appendix
+
+```{r fig.width=7, fig.height=6}
+plot(mtcars$mpg,mtcars$am)
+```
+      Fig. 1: Plot of mpg vs transmission
+
+
+
+```{r fig.width=7, fig.height=6}
+boxplot(mtcars$mpg~mtcars$am)
+```
+    Fig. 2: Boxplot of mpg distribution conditioned to transmission
+
+
+```{r fig.width=7, fig.height=6}
+plot(resid(fit))
+```
+    Fig. 3: Plot of residuals of linear model
