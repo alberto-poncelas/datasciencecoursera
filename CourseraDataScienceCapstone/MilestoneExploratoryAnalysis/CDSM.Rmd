@@ -1,0 +1,138 @@
+---
+title: "Coursera Data Science Milestone"
+author: "Alberto Poncelas"
+output: html_document
+---
+
+## Introduction
+
+The goal of this document is to make an exploratory data analysis for the data provided by the Coursera Data Science Specialization. 
+
+## The data and Sampling
+
+The data consist on three files with texts in English obtained from different sources: blogs, news and twitter.
+
+```{r echo=FALSE}
+num.lines.news<-as.numeric(system(paste("wc -l <", "./final/en_US/en_US.news.txt"), TRUE));
+num.lines.twitter<-as.numeric(system(paste("wc -l <", "./final/en_US/en_US.twitter.txt"), TRUE));
+num.lines.blog<-as.numeric(system(paste("wc -l <", "./final/en_US/en_US.blogs.txt"), TRUE));
+
+num.lines<-num.lines.news+num.lines.twitter+num.lines.blog;
+```
+
+The size of the files are: 
+
+* News: `r prettyNum(num.lines.news,big.mark=",",scientific=F)` lines.
+
+* Tweets:  `r prettyNum(num.lines.twitter,big.mark=",",scientific=F)` lines.
+
+* Blog: `r prettyNum(num.lines.blog,big.mark=",",scientific=F)` lines.
+
+
+```{r echo=FALSE}
+#Max readed lines
+maxTam<-150000;
+
+
+getLines <- function(theFile){
+  #maxTam<-300000
+  con <- file(theFile, "r")
+	lines <-readLines(con, maxTam)  
+	close(con) 
+	lines<-gsub("[.|,|;|:|-]", "", lines)
+	return(lines)
+}
+
+
+tokenizer <- function(lines){
+	words<-unlist(strsplit(lines, "[ ]"))
+	words<-sapply(words,tolower);
+  #Remove words that are URL, hashtags or emails
+  words<-words[!grepl("[@|/|#]",words)];
+	return (words);
+}
+
+```
+
+To perform an analysis of the texts we are going to take a sample of `r prettyNum(maxTam,big.mark=",",scientific=F)` lines each text. Then we are going to extract all the words from all sentences.
+
+
+```{r echo=FALSE}
+#Obtain lines
+lines.news<-getLines("./final/en_US/en_US.news.txt");
+lines.twitter<-getLines("./final/en_US/en_US.twitter.txt");
+lines.blog<-getLines("./final/en_US/en_US.blogs.txt");
+
+lines<-c(lines.news,lines.twitter,lines.blog)
+
+#Obtain words
+words.news<-tokenizer(lines.news);
+words.twitter<-tokenizer(lines.twitter);
+words.blog<-tokenizer(lines.blog);
+
+numWords.news<-length(words.news);
+numWords.twitter<-length(words.twitter);
+numWords.blog<-length(words.blog);
+
+numWords=numWords.news+numWords.twitter+numWords.blog;
+
+numUniqueWords.news<-length(unique(words.news));
+numUniqueWords.twitter<-length(unique(words.twitter));
+numUniqueWords.blog<-length(unique(words.blog));
+
+```
+The number of words extracted from the different files are: 
+
+* News: Extracted `r numWords.news` words (`r numUniqueWords.news` different words).
+
+* Tweets:  Extracted `r numWords.twitter` words (`r numUniqueWords.twitter` different words).
+
+* Blog: Extracted `r numWords.blog` words (`r numUniqueWords.blog` different words).
+
+In total, `r numWords` words have been extracted.
+
+
+## Word distribution
+
+```{r echo=FALSE}
+words<-c(words.news,words.twitter,words.blog)
+wordsTable<- sort(table(words), decreasing = TRUE)
+wordsProb<-wordsTable/sum(wordsTable)
+```
+
+The 20 most frequent words in the sampling are the following: "`r names(head(wordsProb,20))`". We want t o know the distribution of the words, so we have the plot of the histogram and the histogram in log scale. Also we added the cumulative sum plot. 
+
+
+```{r echo=FALSE}
+par(mfrow=c(1, 2))
+hist(wordsTable,main="Histogram of the words",xlab="words");
+hist(log(1+wordsTable),main="Histogram of the words in log scale",xlab="words");
+```
+
+```{r echo=FALSE}
+cs<-cumsum(wordsProb);
+p5<-table(cs<=0.5);
+p9<-table(cs<=0.9);
+
+#p5[names(p5)==T]
+#p9[names(p9)==T]
+
+#plot the cumulative sum
+plot(cs,type="l",main="Cumulative sum",ylab="percentage of the vocabulary covered",xlab="number of words in a frecuency sorted dictionary")
+```
+
+As we can see, there is a set of a few words with a higher frequency. In the last plot we can see the percentage of the vocabulary (meaning all the words in the sample) that is being covered as we increase the size of a frequency sorted dictionary. Just a few words are needed to cover a high percentage: We would need `r p5[names(p5)==T]` words for covering 50% and `r p9[names(p9)==T]` for 90% of the vocabulary.
+
+We are also interested in knowing whether the shortest words are the most frequent or not. For doing that so, we show the occurrences of the words by length (considering the words with more than 30 letters as outliers) 
+
+```{r echo=FALSE}
+wordsLength<-sapply(words,nchar);
+tableLengths<- table(wordsLength);
+plot(tableLengths[1:30],type="l",main="Occurrences of the words by length",xlab="length",ylab="occurrences");
+```
+
+The most frequent words are the ones with `r as.integer(which.max(tableLengths))` letters. The median length of the words is `r median(wordsLength)`.
+
+## Conclusions
+
+In this document we have presented an analysis of the words in English language texts. We can conclude that a small set of words are much more frequent than the rest, and usually the most frequent words tend to be sorter.

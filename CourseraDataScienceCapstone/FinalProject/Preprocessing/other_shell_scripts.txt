@@ -1,0 +1,45 @@
+
+#Here we show some useful AWK script created for the project but that haven't been used for the final version.
+
+
+#usage: create_word_distance_matrix inputfile outputfile
+create_word_distance_matrix(){
+
+	date1=$(date +"%s")
+
+	 awk -F, '{
+			n=split($0,a," "); 
+			#create the matrix with distances:
+			# Md: sum of distances
+			# Mt number of occurences
+			for(i=1;i<n;i++){
+				#Never go further than 15 words
+				maxDist = ( (i+10) < n ? (i+15) : n)
+				for(j=(i+1);j<=maxDist;j++){
+					x=a[i];
+					y=a[j];
+					v=(j-i);
+					if ( length(x)<10 && length(y)<10){
+						Md[x,y]=Md[x,y]+v;
+						Mt[x,y]=Mt[x,y]+1;
+					}
+
+				}
+			}
+
+		}
+		END{ # after reading all lines (END) print the matrix
+			for (k in Md) {
+				split(k,sm,SUBSEP);
+				w1=sm[1];
+				w2=sm[2];
+				print w1" "w2" "Md[w1,w2]" "Mt[w1,w2];
+			}
+		}' $1 > $2
+
+	date2=$(date +"%s")
+	diff=$(($date2-$date1))
+	echo "$(($diff / 60)) minutes and $(($diff % 60)) seconds needed."
+
+}
+

@@ -1,0 +1,31 @@
+@import url('//fonts.googleapis.com/css?family=Lobster|Cabin:400,700');
+body {
+	background-color: #006666 ;
+    color: black;
+}
+
+h2{
+	font-family: 'Lobster', cursive;
+	font-weight: 500;
+	line-height: 2.1;
+	color: white;
+}
+
+.instructions{
+	font-style: italic;
+}
+.loading_class{
+	font-weight: 500;
+	line-height: 1.1;
+	color: #CCFFFF;
+}
+.input_panel{
+	background-color: white  ;
+    color: black;
+}
+.results_panel{
+	color: white;
+}
+.progress-text{
+	color: black;
+}

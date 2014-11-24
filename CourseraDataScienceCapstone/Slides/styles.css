@@ -1,0 +1,20 @@
+@import url('//fonts.googleapis.com/css?family=Lobster|Cabin:400,700');
+body {
+	background-color: #006666 	 ;
+    color: blue ;
+}
+.reveal section h3{
+	font-family: 'Lobster', cursive;
+	color: white;
+}
+.reveal section p {
+  color: black;
+  font-size: 30px;
+}
+.index{
+  color: white;
+}
+.reveal .future_work p{
+  font-size: 25px;
+}
+
